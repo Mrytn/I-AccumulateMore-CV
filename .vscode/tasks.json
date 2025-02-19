@@ -1,0 +1,10 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "echo22",
+      "type": "shell",
+      "command": "echo ${execPath}"
+    }
+  ]
+}

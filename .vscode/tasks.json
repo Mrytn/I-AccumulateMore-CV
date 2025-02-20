@@ -6,7 +6,8 @@
       "type": "shell",
       //${workspaceFolder}本项目根目录D:\ai\cv\I-AccumulateMore-CV
       //${env:PYTHONPATH}windows环境变量PYTHONPATH
-      "command": "echo ${env:PYTHONPATH}\\cd2"
+      // "command": "echo ${env:PYTHONPATH}\\cd2"
+      "command": "echo ${workspaceRoot}\\cd2"
     },
     {
       "label": "Print File Path",

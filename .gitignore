@@ -3,4 +3,7 @@
 *.pdf
 /.history/
 /bigdata/1
+__pycache__/
+*.pyc
+
 

@@ -5,10 +5,10 @@
       "name": "Python: Current File",
       "type": "python",
       "request": "launch",
-      "program": "${file}",
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}"
-      }
+      "program": "${file}"
+      // "env": {
+      //   "PYTHONPATH": "${workspaceFolder}"
+      // }
     }
   ]
 }

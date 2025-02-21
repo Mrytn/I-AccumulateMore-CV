@@ -2,7 +2,7 @@
 **/.history/
 *.pdf
 /.history/
-/bigdata/1
+**/bigdata/
 **/__pycache__/
 *.pyc
 

@@ -7,7 +7,7 @@ import cv2
 from numpy import genfromtxt
 from keras.layers import Conv2D, ZeroPadding2D, Activation, Input, concatenate
 from keras.models import Model
-from keras.layers.normalization import BatchNormalization
+from keras.layers import BatchNormalization
 from keras.layers.pooling import MaxPooling2D, AveragePooling2D
 import h5py
 import matplotlib.pyplot as plt
@@ -155,7 +155,7 @@ def load_weights():
             conv_w = np.reshape(conv_w, conv_shape[name])
             conv_w = np.transpose(conv_w, (2, 3, 1, 0))
             conv_b = genfromtxt(paths[name + '_b'], delimiter=',', dtype=None)
-            weights_dict[name] = [conv_w, conv_b]     
+            weights_dict[name] = [conv_w, conv_b]
         elif 'bn' in name:
             bn_w = genfromtxt(paths[name + '_w'], delimiter=',', dtype=None)
             bn_b = genfromtxt(paths[name + '_b'], delimiter=',', dtype=None)
@@ -182,10 +182,10 @@ def load_dataset():
     test_set_y_orig = np.array(test_dataset["test_set_y"][:]) # your test set labels
 
     classes = np.array(test_dataset["list_classes"][:]) # the list of classes
-    
+
     train_set_y_orig = train_set_y_orig.reshape((1, train_set_y_orig.shape[0]))
     test_set_y_orig = test_set_y_orig.reshape((1, test_set_y_orig.shape[0]))
-    
+
     return train_set_x_orig, train_set_y_orig, test_set_x_orig, test_set_y_orig, classes
 
 def img_to_encoding(image_path, model):

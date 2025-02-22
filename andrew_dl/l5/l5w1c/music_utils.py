@@ -5,14 +5,14 @@ from keras.layers import RepeatVector
 import sys
 from music21 import *
 import numpy as np
-from grammar import *
-from preprocess import *
-from qa import *
+from andrew_dl.l5.l5w1c.preprocess import *
+from andrew_dl.l5.l5w1c.grammar import *
+from andrew_dl.l5.l5w1c.qa import *
 
 
 def data_processing(corpus, values_indices, m = 60, Tx = 30):
     # cut the corpus into semi-redundant sequences of Tx values
-    Tx = Tx 
+    Tx = Tx
     N_values = len(set(corpus))
     np.random.seed(0)
     X = np.zeros((m, Tx, N_values), dtype=np.bool)
@@ -26,15 +26,15 @@ def data_processing(corpus, values_indices, m = 60, Tx = 30):
             if j != 0:
                 X[i, j, idx] = 1
                 Y[i, j-1, idx] = 1
-    
+
     Y = np.swapaxes(Y,0,1)
     Y = Y.tolist()
-    return np.asarray(X), np.asarray(Y), N_values 
+    return np.asarray(X), np.asarray(Y), N_values
 
 def next_value_processing(model, next_value, x, predict_and_sample, indices_values, abstract_grammars, duration, max_tries = 1000, temperature = 0.5):
     """
     Helper function to fix the first value.
-    
+
     Arguments:
     next_value -- predicted and sampled value, index between 0 and 77
     x -- numpy-array, one-hot encoding of next_value
@@ -43,7 +43,7 @@ def next_value_processing(model, next_value, x, predict_and_sample, indices_valu
     abstract_grammars -- list of grammars, on element can be: 'S,0.250,<m2,P-4> C,0.250,<P4,m-2> A,0.250,<P4,m-2>'
     duration -- scalar, index of the loop in the parent function
     max_tries -- Maximum numbers of time trying to fix the value
-    
+
     Returns:
     next_value -- process predicted value
     """
@@ -51,7 +51,7 @@ def next_value_processing(model, next_value, x, predict_and_sample, indices_valu
     # fix first note: must not have < > and not be a rest
     if (duration < 0.00001):
         tries = 0
-        while (next_value.split(',')[0] == 'R' or 
+        while (next_value.split(',')[0] == 'R' or
             len(next_value.split(',')) != 2):
             # give up after 1000 tries; random from input's first notes
             if tries >= max_tries:
@@ -63,20 +63,20 @@ def next_value_processing(model, next_value, x, predict_and_sample, indices_valu
                 next_value = predict_and_sample(model, x, indices_values, temperature)
 
             tries += 1
-            
+
     return next_value
 
 
 def sequence_to_matrix(sequence, values_indices):
     """
-    Convert a sequence (slice of the corpus) into a matrix (numpy) of one-hot vectors corresponding 
+    Convert a sequence (slice of the corpus) into a matrix (numpy) of one-hot vectors corresponding
     to indices in values_indices
-    
+
     Arguments:
     sequence -- python list
-    
+
     Returns:
-    x -- numpy-array of one-hot vectors 
+    x -- numpy-array of one-hot vectors
     """
     sequence_len = len(sequence)
     x = np.zeros((1, sequence_len, len(values_indices)))
@@ -87,6 +87,6 @@ def sequence_to_matrix(sequence, values_indices):
 
 def one_hot(x):
     x = K.argmax(x)
-    x = tf.one_hot(x, 78) 
+    x = tf.one_hot(x, 78)
     x = RepeatVector(1)(x)
     return x

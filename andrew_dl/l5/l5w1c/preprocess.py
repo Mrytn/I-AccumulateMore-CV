@@ -13,10 +13,10 @@ from music21 import *
 from collections import defaultdict, OrderedDict
 from itertools import groupby, zip_longest
 
-from grammar import *
+from andrew_dl.l5.l5w1c.grammar import *
 
-from grammar import parse_melody
-from music_utils import *
+# from grammar import parse_melody
+from andrew_dl.l5.l5w1c.music_utils import *
 
 #----------------------------HELPER FUNCTIONS----------------------------------#
 
@@ -36,7 +36,7 @@ def __parse_midi(data_fn):
             i.quarterLength = 0.25
 
     # Change key signature to adhere to comp_stream (1 sharp, mode = major).
-    # Also add Electric Guitar. 
+    # Also add Electric Guitar.
     melody_voice.insert(0, instrument.ElectricGuitar())
     melody_voice.insert(0, key.KeySignature(sharps=1))
 
@@ -46,11 +46,11 @@ def __parse_midi(data_fn):
     # Verified are good parts: 0, 1, 6, 7 '''
     partIndices = [0, 1, 6, 7]
     comp_stream = stream.Voice()
-    comp_stream.append([j.flat for i, j in enumerate(midi_data) 
+    comp_stream.append([j.flat for i, j in enumerate(midi_data)
         if i in partIndices])
 
-    # Full stream containing both the melody and the accompaniment. 
-    # All parts are flattened. 
+    # Full stream containing both the melody and the accompaniment.
+    # All parts are flattened.
     full_stream = stream.Voice()
     for i in range(len(comp_stream)):
         full_stream.append(comp_stream[i])
@@ -67,12 +67,12 @@ def __parse_midi(data_fn):
         curr_part.append(part.getElementsByClass(tempo.MetronomeMark))
         curr_part.append(part.getElementsByClass(key.KeySignature))
         curr_part.append(part.getElementsByClass(meter.TimeSignature))
-        curr_part.append(part.getElementsByOffset(476, 548, 
+        curr_part.append(part.getElementsByOffset(476, 548,
                                                   includeEndBoundary=True))
         cp = curr_part.flat
         solo_stream.insert(cp)
 
-    # Group by measure so you can classify. 
+    # Group by measure so you can classify.
     # Note that measure 0 is for the time signature, metronome, etc. which have
     # an offset of 0.0.
     melody_stream = solo_stream[-1]
@@ -91,8 +91,8 @@ def __parse_midi(data_fn):
     offsetTuples_chords = [(int(n.offset / 4), n) for n in chordStream]
 
     # Generate the chord structure. Use just track 1 (piano) since it is
-    # the only instrument that has chords. 
-    # Group into 4s, just like before. 
+    # the only instrument that has chords.
+    # Group into 4s, just like before.
     chords = OrderedDict()
     measureNum = 0
     for key_x, group in groupby(offsetTuples_chords, lambda x: x[0]):
@@ -105,7 +105,7 @@ def __parse_midi(data_fn):
     #           actually show up, while the accompaniment's beat 1 right after does.
     #           Actually on second thought: melody/comp start on Ab, and resolve to
     #           the same key (Ab) so could actually just cut out last measure to loop.
-    #           Decided: just cut out the last measure. 
+    #           Decided: just cut out the last measure.
     del chords[len(chords) - 1]
     assert len(chords) == len(measures)
 
@@ -131,7 +131,7 @@ def __get_abstract_grammars(measures, chords):
 
 ''' Get musical data from a MIDI file '''
 def get_musical_data(data_fn):
-    
+
     measures, chords = __parse_midi(data_fn)
     abstract_grammars = __get_abstract_grammars(measures, chords)
 

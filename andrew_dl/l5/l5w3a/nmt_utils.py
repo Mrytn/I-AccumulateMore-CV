@@ -7,8 +7,8 @@ from keras.utils import to_categorical
 import keras.backend as K
 import matplotlib.pyplot as plt
 
+Faker.seed(1234)
 fake = Faker()
-fake.seed(12345)
 random.seed(12345)
 
 # Define format of the data we would like to generate
@@ -25,7 +25,7 @@ FORMATS = ['short',
            'full',
            'full',
            'full',
-           'd MMM YYY', 
+           'd MMM YYY',
            'd MMMM YYY',
            'dd MMM YYY',
            'd MMM, YYY',
@@ -42,7 +42,7 @@ LOCALES = ['en_US']
 
 def load_date():
     """
-        Loads some fake dates 
+        Loads some fake dates
         :returns: tuple containing human readable string, machine readable string, and date object
     """
     dt = fake.date_object()
@@ -52,7 +52,7 @@ def load_date():
         human_readable = human_readable.lower()
         human_readable = human_readable.replace(',','')
         machine_readable = dt.isoformat()
-        
+
     except AttributeError as e:
         return None, None, None
 
@@ -63,12 +63,12 @@ def load_dataset(m):
         Loads a dataset with m examples and vocabularies
         :m: the number of examples to generate
     """
-    
+
     human_vocab = set()
     machine_vocab = set()
     dataset = []
     Tx = 30
-    
+
 
     for i in tqdm(range(m)):
         h, m, _ = load_date()
@@ -76,21 +76,21 @@ def load_dataset(m):
             dataset.append((h, m))
             human_vocab.update(tuple(h))
             machine_vocab.update(tuple(m))
-    
-    human = dict(zip(sorted(human_vocab) + ['<unk>', '<pad>'], 
+
+    human = dict(zip(sorted(human_vocab) + ['<unk>', '<pad>'],
                      list(range(len(human_vocab) + 2))))
     inv_machine = dict(enumerate(sorted(machine_vocab)))
     machine = {v:k for k,v in inv_machine.items()}
- 
+
     return dataset, human, machine, inv_machine
 
 def preprocess_data(dataset, human_vocab, machine_vocab, Tx, Ty):
-    
+
     X, Y = zip(*dataset)
-    
+
     X = np.array([string_to_int(i, Tx, human_vocab) for i in X])
     Y = [string_to_int(t, Ty, machine_vocab) for t in Y]
-    
+
     Xoh = np.array(list(map(lambda x: to_categorical(x, num_classes=len(human_vocab)), X)))
     Yoh = np.array(list(map(lambda x: to_categorical(x, num_classes=len(machine_vocab)), Y)))
 
@@ -100,28 +100,28 @@ def string_to_int(string, length, vocab):
     """
     Converts all strings in the vocabulary into a list of integers representing the positions of the
     input string's characters in the "vocab"
-    
+
     Arguments:
     string -- input string, e.g. 'Wed 10 Jul 2007'
     length -- the number of time steps you'd like, determines if the output will be padded or cut
     vocab -- vocabulary, dictionary used to index every character of your "string"
-    
+
     Returns:
     rep -- list of integers (or '<unk>') (size = length) representing the position of the string's character in the vocabulary
     """
-    
+
     #make lower to standardize
     string = string.lower()
     string = string.replace(',','')
-    
+
     if len(string) > length:
         string = string[:length]
-        
+
     rep = list(map(lambda x: vocab.get(x, '<unk>'), string))
-    
+
     if len(string) < length:
         rep += [vocab['<pad>']] * (length - len(string))
-    
+
     #print (rep)
     return rep
 
@@ -129,15 +129,15 @@ def string_to_int(string, length, vocab):
 def int_to_string(ints, inv_vocab):
     """
     Output a machine readable list of characters based on a list of indexes in the machine's vocabulary
-    
+
     Arguments:
     ints -- list of integers representing indexes in the machine's vocabulary
-    inv_vocab -- dictionary mapping machine readable indexes to machine readable characters 
-    
+    inv_vocab -- dictionary mapping machine readable indexes to machine readable characters
+
     Returns:
     l -- list of characters corresponding to the indexes of ints thanks to the inv_vocab mapping
     """
-    
+
     l = [inv_vocab[i] for i in ints]
     return l
 
@@ -178,16 +178,16 @@ def softmax(x, axis=1):
         return e / s
     else:
         raise ValueError('Cannot apply softmax to a tensor that is 1D')
-        
+
 
 def plot_attention_map(model, input_vocabulary, inv_output_vocabulary, text, n_s = 128, num = 6, Tx = 30, Ty = 10):
     """
     Plot the attention map.
-  
+
     """
     attention_map = np.zeros((10, 30))
     Ty, Tx = attention_map.shape
-    
+
     s0 = np.zeros((1, n_s))
     c0 = np.zeros((1, n_s))
     layer = model.layers[num]
@@ -197,7 +197,7 @@ def plot_attention_map(model, input_vocabulary, inv_output_vocabulary, text, n_s
 
     f = K.function(model.inputs, [layer.get_output_at(t) for t in range(Ty)])
     r = f([encoded, s0, c0])
-    
+
     for t in range(Ty):
         for t_prime in range(Tx):
             attention_map[t][t_prime] = r[t][0,t_prime,0]
@@ -207,19 +207,19 @@ def plot_attention_map(model, input_vocabulary, inv_output_vocabulary, text, n_s
     # attention_map = attention_map / row_max[:, None]
 
     prediction = model.predict([encoded, s0, c0])
-    
+
     predicted_text = []
     for i in range(len(prediction)):
         predicted_text.append(int(np.argmax(prediction[i], axis=1)))
-        
+
     predicted_text = list(predicted_text)
     predicted_text = int_to_string(predicted_text, inv_output_vocabulary)
     text_ = list(text)
-    
+
     # get the lengths of the string
     input_length = len(text)
     output_length = Ty
-    
+
     # Plot the attention_map
     plt.clf()
     f = plt.figure(figsize=(8, 8.5))
@@ -247,5 +247,5 @@ def plot_attention_map(model, input_vocabulary, inv_output_vocabulary, text, n_s
     ax.grid()
 
     #f.show()
-    
+
     return attention_map

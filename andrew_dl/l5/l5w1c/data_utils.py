@@ -2,7 +2,8 @@ from andrew_dl.l5.l5w1c.music_utils import *
 from andrew_dl.l5.l5w1c.preprocess import *
 from keras.utils import to_categorical
 
-chords, abstract_grammars = get_musical_data('data/original_metheny.mid')
+chords, abstract_grammars = get_musical_data(
+    'andrew_dl/l5/l5w1c/original_metheny.mid')
 corpus, tones, tones_indices, indices_tones = get_corpus_data(abstract_grammars)
 N_tones = len(set(corpus))
 n_a = 64
@@ -11,7 +12,8 @@ a_initializer = np.zeros((1, n_a))
 c_initializer = np.zeros((1, n_a))
 
 def load_music_utils():
-    chords, abstract_grammars = get_musical_data('data/original_metheny.mid')
+    chords, abstract_grammars = get_musical_data(
+        'andrew_dl/l5/l5w1c/original_metheny.mid')
     corpus, tones, tones_indices, indices_tones = get_corpus_data(abstract_grammars)
     N_tones = len(set(corpus))
     X, Y, N_tones = data_processing(corpus, tones_indices, 60, 30)

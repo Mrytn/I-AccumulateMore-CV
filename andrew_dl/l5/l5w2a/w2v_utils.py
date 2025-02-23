@@ -96,19 +96,19 @@ class SimilarityCallback:
             out = validation_model.predict_on_batch([in_arr1, in_arr2])
             sim[i] = out
         return sim
-    
+
 
 def read_glove_vecs(glove_file):
     with open(glove_file, 'r', encoding='utf8') as f:
         words = set()
         word_to_vec_map = {}
-        
+
         for line in f:
             line = line.strip().split()
             curr_word = line[0]
             words.add(curr_word)
             word_to_vec_map[curr_word] = np.array(line[1:], dtype=np.float64)
-            
+
     return words, word_to_vec_map
 
 def relu(x):
@@ -122,7 +122,7 @@ def relu(x):
     s -- relu(x)
     """
     s = np.maximum(0,x)
-    
+
     return s
 
 
@@ -130,7 +130,7 @@ def initialize_parameters(vocab_size, n_h):
     """
     Arguments:
     layer_dims -- python array (list) containing the dimensions of each layer in our network
-    
+
     Returns:
     parameters -- python dictionary containing your parameters "W1", "b1", "W2", "b2":
                     W1 -- weight matrix of shape (n_h, vocab_size)
@@ -138,7 +138,7 @@ def initialize_parameters(vocab_size, n_h):
                     W2 -- weight matrix of shape (vocab_size, n_h)
                     b2 -- bias vector of shape (vocab_size, 1)
     """
-    
+
     np.random.seed(3)
     parameters = {}
 

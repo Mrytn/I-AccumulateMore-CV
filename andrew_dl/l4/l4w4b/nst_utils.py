@@ -111,7 +111,7 @@ def load_vgg_model(path):
         W, b = _weights(layer, layer_name)
         W = tf.constant(W)
         b = tf.constant(np.reshape(b, (b.size)))
-        return tf.nn.conv2d(prev_layer, filter=W, strides=[1, 1, 1, 1], padding='SAME') + b
+        return tf.nn.conv2d(prev_layer, filters=W, strides=[1, 1, 1, 1], padding='SAME') + b
 
     def _conv2d_relu(prev_layer, layer, layer_name):
         """
@@ -159,7 +159,8 @@ def generate_noise_image(content_image, noise_ratio=CONFIG.NOISE_RATIO):
     """
     Generates a noisy image by adding random noise to the content_image
     """
-
+# 通过将随机噪声图像 noise_image 乘以 noise_ratio，将内容图像 content_image 乘以 (1 - noise_ratio)，然后将两者相加，得到一个加权平均的图像 input_image。
+# 这样，noise_ratio 越大，生成的图像中随机噪声的成分就越多；noise_ratio 越小，生成的图像就越接近内容图像
     # Generate a random noise_image
     noise_image = np.random.uniform(-20, 20, (1, CONFIG.IMAGE_HEIGHT,
                                     CONFIG.IMAGE_WIDTH, CONFIG.COLOR_CHANNELS)).astype('float32')

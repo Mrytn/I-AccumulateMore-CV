@@ -15,8 +15,8 @@ def data_processing(corpus, values_indices, m = 60, Tx = 30):
     Tx = Tx
     N_values = len(set(corpus))
     np.random.seed(0)
-    X = np.zeros((m, Tx, N_values), dtype=np.bool)
-    Y = np.zeros((m, Tx, N_values), dtype=np.bool)
+    X = np.zeros((m, Tx, N_values), dtype=np.bool_)
+    Y = np.zeros((m, Tx, N_values), dtype=np.bool_)
     for i in range(m):
 #         for t in range(1, Tx):
         random_idx = np.random.choice(len(corpus) - Tx)

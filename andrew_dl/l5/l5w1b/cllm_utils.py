@@ -9,9 +9,10 @@ def smooth(loss, cur_loss):
 
 def print_sample(sample_ix, ix_to_char):
     txt = ''.join(ix_to_char[ix] for ix in sample_ix)
-    txt = txt[0].upper() + txt[1:]  # capitalize first character 
+    txt = txt[0].upper() + txt[1:]  # capitalize first character
     print ('%s' % (txt, ), end='')
 
+# 计算随机预测的概率：在模型训练的初始阶段，由于模型还没有学习到任何有用的信息，对于每个时间步的预测，它对词汇表中的每个元素都有相同的预测概率。因此，每个元素被预测到的概率为 1/vocab_size。例如，如果词汇表大小为 10，那么模型随机预测每个元素的概率就是 1/10 = 0.1。计算单个时间步的损失：在分类问题中，常用的损失函数是交叉熵损失函数。对于单个样本的交叉熵损失，其计算公式为 \(L = - \log(p)\)，其中 p 是模型预测该样本的概率。在这里，由于每个元素的预测概率为 1/vocab_size，所以单个时间步的损失为 \(-\log(1/vocab_size)\)。计算整个序列的损失：由于序列长度为 seq_length，且假设每个时间步的预测是相互独立的，那么整个序列的损失就是单个时间步损失的累加。因此，整个序列的初始损失为 \(-\log(1/vocab_size) \times seq_length\)。
 def get_initial_loss(vocab_size, seq_length):
     return -np.log(1.0/vocab_size)*seq_length
 
@@ -22,7 +23,7 @@ def softmax(x):
 def initialize_parameters(n_a, n_x, n_y):
     """
     Initialize parameters with small random values
-    
+
     Returns:
     parameters -- python dictionary containing:
                         Wax -- Weight matrix multiplying the input, numpy array of shape (n_a, n_x)
@@ -37,21 +38,22 @@ def initialize_parameters(n_a, n_x, n_y):
     Wya = np.random.randn(n_y, n_a)*0.01 # hidden to output
     b = np.zeros((n_a, 1)) # hidden bias
     by = np.zeros((n_y, 1)) # output bias
-    
+
     parameters = {"Wax": Wax, "Waa": Waa, "Wya": Wya, "b": b,"by": by}
-    
+
     return parameters
 
 def rnn_step_forward(parameters, a_prev, x):
-    
+
     Waa, Wax, Wya, by, b = parameters['Waa'], parameters['Wax'], parameters['Wya'], parameters['by'], parameters['b']
     a_next = np.tanh(np.dot(Wax, x) + np.dot(Waa, a_prev) + b) # hidden state
-    p_t = softmax(np.dot(Wya, a_next) + by) # unnormalized log probabilities for next chars # probabilities for next chars 
-    
+    # unnormalized log probabilities for next chars # probabilities for next chars
+    p_t = softmax(np.dot(Wya, a_next) + by)
+
     return a_next, p_t
 
 def rnn_step_backward(dy, gradients, parameters, x, a, a_prev):
-    
+
     gradients['dWya'] += np.dot(dy, a.T)
     gradients['dby'] += dy
     da = np.dot(parameters['Wya'].T, dy) + gradients['da_next'] # backprop into h
@@ -72,46 +74,46 @@ def update_parameters(parameters, gradients, lr):
     return parameters
 
 def rnn_forward(X, Y, a0, parameters, vocab_size = 27):
-    
+
     # Initialize x, a and y_hat as empty dictionaries
     x, a, y_hat = {}, {}, {}
-    
+
     a[-1] = np.copy(a0)
-    
+
     # initialize your loss to 0
     loss = 0
-    
+
     for t in range(len(X)):
-        
+
         # Set x[t] to be the one-hot vector representation of the t'th character in X.
-        # if X[t] == None, we just have x[t]=0. This is used to set the input for the first timestep to the zero vector. 
-        x[t] = np.zeros((vocab_size,1)) 
+        # if X[t] == None, we just have x[t]=0. This is used to set the input for the first timestep to the zero vector.
+        x[t] = np.zeros((vocab_size, 1))
         if (X[t] != None):
             x[t][X[t]] = 1
-        
+
         # Run one step forward of the RNN
         a[t], y_hat[t] = rnn_step_forward(parameters, a[t-1], x[t])
-        
+
         # Update the loss by substracting the cross-entropy term of this time-step from it.
         loss -= np.log(y_hat[t][Y[t],0])
-        
+
     cache = (y_hat, a, x)
-        
+
     return loss, cache
 
 def rnn_backward(X, Y, parameters, cache):
     # Initialize gradients as an empty dictionary
     gradients = {}
-    
+
     # Retrieve from cache and parameters
     (y_hat, a, x) = cache
     Waa, Wax, Wya, by, b = parameters['Waa'], parameters['Wax'], parameters['Wya'], parameters['by'], parameters['b']
-    
+
     # each one should be initialized to zeros of the same dimension as its corresponding parameter
     gradients['dWax'], gradients['dWaa'], gradients['dWya'] = np.zeros_like(Wax), np.zeros_like(Waa), np.zeros_like(Wya)
     gradients['db'], gradients['dby'] = np.zeros_like(b), np.zeros_like(by)
     gradients['da_next'] = np.zeros_like(a[0])
-    
+
     ### START CODE HERE ###
     # Backpropagate through time
     for t in reversed(range(len(X))):
@@ -119,6 +121,6 @@ def rnn_backward(X, Y, parameters, cache):
         dy[Y[t]] -= 1
         gradients = rnn_step_backward(dy, gradients, parameters, x[t], a[t], a[t-1])
     ### END CODE HERE ###
-    
+
     return gradients, a
 
